@@ -16,6 +16,8 @@
 </template>
 <script>
 import Tables from '_c/tables'
+import Axios from 'axios'
+import store from '@/store'
 
 export default {
 	name: 'userManage',
@@ -27,9 +29,10 @@ export default {
 				{ user: 'shanying', group: '普通' }
 			],
 			columns: [
-				{ title: '#', type: 'index', align: 'center' },
-				{ title: '用户名', key: 'user', align: 'center' },
-				{ title: '当前组', key: 'group', align: 'center' }
+				{ title: 'id', key: 'Id', align: 'center' },
+				{ title: '用户名', key: 'Name', align: 'center' },
+				{ title: '描述', key: 'Description', align: 'center' }
+				// { title: '当前组', key: 'group', align: 'center' }
 			],
 			Group: '',
 			GroupList: ['root', '普通', '分组1', '分组2'],
@@ -49,7 +52,27 @@ export default {
 			if (this.Group === this.temp) {
 				this.$Message.info('未做修改!')
 			}
+		},
+		// 获取全部角色信息
+		getTableData () {
+            console.log(store.state.token)
+			Axios({
+				url: 'http://localhost:8081/api/Role/Get',
+				method: 'GET',
+				params: { page: 1, key: '' },
+				headers: {
+					'Authorization': 'Bearer ' + store.state.token
+				}
+			}).then(res => {
+				console.log(res)
+                this.tableData = res.data.response.data
+			}).catch(err => {
+				console.log(err)
+			})
 		}
+	},
+	mounted () {
+		this.getTableData()
 	}
 }
 </script>

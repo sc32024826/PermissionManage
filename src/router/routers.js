@@ -63,7 +63,8 @@ export default [
                 meta: {
                     hideInMenu: true,
                     title: '首页',
-                    notCache: true
+                    notCache: true,
+                    requireAuth: true
                 },
                 component: () => import('@/view/single-page/home')
             }
@@ -87,8 +88,8 @@ export default [
                 meta: {
                     title: '用户管理',
                     notCache: true,
-                    icon: 'md-home'
-
+                    icon: 'md-home',
+                    requireAuth: true
                 },
                 component: () => import('@/views/permissions/user')
             },
@@ -98,8 +99,8 @@ export default [
                 meta: {
                     title: '菜单管理',
                     notCache: true,
-                    icon: 'md-home'
-
+                    icon: 'md-home',
+                    requireAuth: true
                 },
                 component: () => import('@/views/permissions/menu')
             },
@@ -109,8 +110,8 @@ export default [
                 meta: {
                     title: '权限组分配',
                     notCache: true,
-                    icon: 'md-home'
-
+                    icon: 'md-home',
+                    requireAuth: true
                 },
                 component: () => import('@/views/permissions/manage')
             }

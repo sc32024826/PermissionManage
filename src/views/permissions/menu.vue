@@ -53,7 +53,8 @@ export default {
 				{ type: 'selection', width: 60, key: 'sele' },
 				{ title: '菜单', key: 'name', tree: true },
 				{ title: '路由地址', key: 'path' },
-				{ title: 'API接口', key: 'APIURL' }
+				{ title: 'API接口', key: 'APIURL' },
+				{ title: '菜单icon', key: 'icon' }
 			],
 			loading: false,
 			bNewPage: false,
@@ -114,6 +115,7 @@ export default {
 				_this.tableData = result.children
 			}).catch((err) => {
 				console.log(err)
+				this.$Message.error('请求地址失败')
 			})
 		},
 		selectionChange (data) {
