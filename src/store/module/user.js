@@ -1,10 +1,22 @@
+import {
+    login,
+    logout,
+    getUserInfo,
+    getMessage,
+    getContentByMsgId,
+    hasRead,
+    removeReaded,
+    restoreTrash,
+    getUnreadCount
+} from '@/api/user'
+import { setToken, getToken } from '@/libs/util'
 
 export default {
     state: {
         userName: '',
         userId: '',
         avatarImgPath: '',
-        token: '',
+        token: getToken(),
         access: '',
         hasGetInfo: false,
         unreadCount: 0,
@@ -16,6 +28,7 @@ export default {
     mutations: {
         setToken (state, token) {
             state.token = token
+            setToken(token)
         }
     },
     getters: {
@@ -23,8 +36,8 @@ export default {
     },
     actions: {
         // 登录
-        handleLogin (commit) {
-            commit('setToken', data.token)
+        handleLogin ({ commit }, token) {
+            commit('setToken', token)
         },
         // 退出登录
         handleLogOut ({ state, commit }) {

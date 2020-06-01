@@ -4,8 +4,9 @@
 	</div>
 </template>
 <script>
-import store from '@/store'
+// import store from '@/store'
 import Axios from 'axios'
+import { mapState, mapActions } from 'vuex'
 
 export default {
 	name: 'login',
@@ -14,17 +15,22 @@ export default {
 
 		}
 	},
+	computed: mapState(['token']),
 	methods: {
+		...mapActions([
+			'handleLogin'
+		]),
 		async login () {
+			let _this = this
 			Axios({
 				url: 'http://localhost:8081/api/Login/JWTToken3.0',
-				params: { name: 'test', pass: 'test' },
+				params: { name: 'blogadmin', pass: 'blogadmin' },
 				methods: 'GET'
 			}).then(res => {
 				console.log('保存token')
 				let token = res.data.response.token
 				console.log(token)
-				store.commit('setToken', token)
+				_this.handleLogin(token)
 				this.$router.push({ name: 'home' })
 			}).catch(err => {
 				console.log(err)
@@ -32,9 +38,11 @@ export default {
 		}
 	},
 	async mounted () {
+        let token = this.token
+        console.log(token)
 		// 如果已经登录
-		if (store.state.token) {
-			console.log(store.state.token)
+		if (token) {
+			console.log('已经登录,直接跳转')
 			this.$router.push('/home')
 		} else {
 			console.log('未登录')

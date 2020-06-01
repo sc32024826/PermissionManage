@@ -20,7 +20,7 @@
 				</FormItem>
 			</Form>
 		</Modal>
-		<Modal title="编辑项目" v-model="bEditModal" @ok="submit">
+		<Modal title="编辑项目" v-model="bEditModal" @on-ok="submit">
 			<Form :model="editData" label-position="left" :label-width="80">
 				<FormItem label="菜单名称">
 					<Input v-model="editData.name" />
@@ -33,16 +33,18 @@
 				</FormItem>
 			</Form>
 		</Modal>
-		<Modal title="确认删除!" v-model="bDeleteConfirmModal" @ok="confirmDel">
+		<Modal title="确认删除!" v-model="bDeleteConfirmModal" @on-ok="confirmDel">
 			<h1 class="red">您真的要删除这{{length}}项么?</h1>
-			<h1 class="red">确认之后,无法回滚,请谨慎操作!</h1>
+			<li v-for="(item, index) in selectionItems" :key="index">id:{{item.id}} - {{item.name}}</li>
 		</Modal>
 	</div>
 </template>
 
 <script>
-import store from '@/store'
+// import store from '@/store'
 import axios from 'axios'
+import { mapActions } from 'vuex'
+import { getToken } from '@/libs/util'
 
 export default {
 	name: 'menuManage',
@@ -70,11 +72,19 @@ export default {
 		// 获得菜单列表数据
 		this.isLogin()
 	},
+	computed: {
+		token: function () {
+			return getToken()
+		}
+	},
 	methods: {
+		...mapActions([
+			'handleLogin'
+		]),
 		// 判断是否登录
 		isLogin () {
-			let token = store.state.token
-			console.log(token)
+			console.log(this.token)
+			debugger
 			if (token !== 'undefined') {
 				console.log('token')
 				this.getTableData()
@@ -86,10 +96,9 @@ export default {
 			}
 		},
 		getTableData () {
-			let Token = store.state.token
 			axios({
 				url: 'http://localhost:8081/api/User/GetInfoByToken',
-				params: { token: Token },
+				params: { token: this.token },
 				methods: 'GET'
 			}).then((res) => {
 				console.log(res.data)
@@ -107,7 +116,7 @@ export default {
 				params: { uid: uid },
 				methods: 'GET',
 				headers: {
-					'Authorization': 'Bearer ' + store.state.token
+					'Authorization': 'Bearer ' + _this.token
 				}
 			}).then((res) => {
 				let result = res.data.response
@@ -144,13 +153,64 @@ export default {
 				this.bDeleteConfirmModal = true
 			}
 		},
-		// 确认删除
+		// 根据菜单id 删除菜单
 		confirmDel () {
+			let _this = this
+			console.log(this.selectionItems)
+			_this.selectionItems.forEach(v => {
+				axios({
+					url: 'http://localhost:8081/api/Permission/Delete',
+					method: 'DELETE',
+					params: { id: v.id },
+					headers: {
+						'Authorization': 'Bearer ' + _this.token
+					}
+				}).then(res => {
+					_this.$Message.info(res.data.msg)
+				}).catch(err => {
+					_this.$Message.info(err)
+				})
+			})
 			// 删除完之后 清空
-			this.selectionItems = []
+			_this.selectionItems = []
+			_this.getTableData()
 		},
 		// 提交修改
 		submit () {
+			let req = {
+				'code': 'string',
+				'name': 'string',
+				'isButton': true,
+				'isHide': true,
+				'iskeepAlive': true,
+				'func': 'string',
+				'pid': 0,
+				'mid': 0,
+				'orderSort': 0,
+				'icon': 'string',
+				'description': 'string',
+				'enabled': true,
+				'createId': 0,
+				'createBy': 'string',
+				'createTime': '2020-05-29T02:17:06.136Z',
+				'modifyId': 0,
+				'modifyBy': 'string',
+				'modifyTime': '2020-05-29T02:17:06.136Z',
+				'isDeleted': true,
+				'pidArr': [
+					0
+				],
+				'pnameArr': [
+					'string'
+				],
+				'pCodeArr': [
+					'string'
+				],
+				'mName': 'string',
+				'hasChildren': true,
+				'id': 0
+			}
+			console.log(req)
 			// 修改完后 清理数据
 			this.editData = {}
 		},
