@@ -38,6 +38,7 @@ export default {
 		}
 	},
 	async mounted () {
+        console.log('mounted')
         let token = this.token
         console.log(token)
 		// 如果已经登录

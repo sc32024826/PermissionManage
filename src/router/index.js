@@ -22,7 +22,6 @@ const LOGIN_PAGE_NAME = 'login'
 router.beforeEach((to, from, next) => {
     iView.LoadingBar.start()
     const token = getToken()
-    console.log(token)
     if (!token && to.name !== LOGIN_PAGE_NAME) {
         console.log('未登录且要跳转的页面不是登录页')
         // 未登录且要跳转的页面不是登录页

@@ -5,7 +5,7 @@
 			<Button type="warning" icon="md-create" @click="edit">修改选中项</Button>
 			<Button type="error" icon="md-trash" @click="del">删除选中项</Button>
 		</div>
-		<Table :data="tableData" :columns="columns" row-key="id" @on-selection-change="selectionChange">
+		<Table :data="tableData" :columns="columns" row-key="Id" :load-data="handleLoadData" @on-selection-change="selectionChange">
 		</Table>
 		<Modal title="新增页面接口" v-model="bNewPage" width="70%" @ok="submititem">
 			<Form :model="formData" label-position="left" :label-width="80">
@@ -23,13 +23,19 @@
 		<Modal title="编辑项目" v-model="bEditModal" @on-ok="submit">
 			<Form :model="editData" label-position="left" :label-width="80">
 				<FormItem label="菜单名称">
-					<Input v-model="editData.name" />
+					<Input v-model="editData.Name" />
+				</FormItem>
+                <FormItem label="菜单描述">
+					<Input v-model="editData.Description" />
+				</FormItem>
+				<FormItem label="icon">
+					<Input v-model="editData.Icon" />
 				</FormItem>
 				<FormItem label="页面路径">
-					<Input v-model="editData.path" />
+					<Input v-model="editData.Code" />
 				</FormItem>
 				<FormItem label="接口路径">
-					<Input v-model="editData.api" />
+					<Input v-model="editData.MName" />
 				</FormItem>
 			</Form>
 		</Modal>
@@ -45,6 +51,8 @@
 import axios from 'axios'
 import { mapActions } from 'vuex'
 import { getToken } from '@/libs/util'
+import config from '@/config'
+const baseUrl = process.env.NODE_ENV === 'development' ? config.baseUrl.dev : config.baseUrl.pro
 
 export default {
 	name: 'menuManage',
@@ -53,10 +61,12 @@ export default {
 			tableData: [],
 			columns: [
 				{ type: 'selection', width: 60, key: 'sele' },
-				{ title: '菜单', key: 'name', tree: true },
-				{ title: '路由地址', key: 'path' },
-				{ title: 'API接口', key: 'APIURL' },
-				{ title: '菜单icon', key: 'icon' }
+				{ title: 'Id', key: 'Id', width: 60 },
+				{ title: '菜单', key: 'Name', tree: true },
+				{ title: '菜单描述', key: 'Description' },
+				{ title: '路由地址', key: 'Code' },
+				{ title: 'API接口', key: 'MName' },
+				{ title: '菜单icon', key: 'Icon' }
 			],
 			loading: false,
 			bNewPage: false,
@@ -71,6 +81,7 @@ export default {
 	mounted () {
 		// 获得菜单列表数据
 		this.isLogin()
+		// console.log(baseUrl)
 	},
 	computed: {
 		token: function () {
@@ -84,8 +95,8 @@ export default {
 		// 判断是否登录
 		isLogin () {
 			console.log(this.token)
-			debugger
-			if (token !== 'undefined') {
+
+			if (this.token !== 'undefined') {
 				console.log('token')
 				this.getTableData()
 			} else {
@@ -95,45 +106,38 @@ export default {
 				this.getTableData()
 			}
 		},
+		// 显示菜单列表
 		getTableData () {
 			axios({
-				url: 'http://localhost:8081/api/User/GetInfoByToken',
-				params: { token: this.token },
+				url: baseUrl + '/api/Permission/GetTreeTable',
 				methods: 'GET'
 			}).then((res) => {
-				console.log(res.data)
-				let uid = res.data.response.uID
-				console.log(uid)
-				this.getPageList(uid)
+				let list = res.data.response
+				list.forEach(element => {
+					if (element.hasChildren) {
+						element = Object.assign(element, { _loading: false, children: [] })
+					}
+				})
+				this.tableData = list
+				console.log(list)
 			}).catch((err) => {
 				console.log(err)
+				this.$Message['error']({
+					background: true,
+					content: err,
+					duration: 3
+				})
 			})
-		},
-		getPageList (uid) {
-			let _this = this
-			axios({
-				url: 'http://localhost:8081/api/Permission/GetNavigationBar',
-				params: { uid: uid },
-				methods: 'GET',
-				headers: {
-					'Authorization': 'Bearer ' + _this.token
-				}
-			}).then((res) => {
-				let result = res.data.response
-				console.log(result)
-				_this.tableData = result.children
-			}).catch((err) => {
-				console.log(err)
-				this.$Message.error('请求地址失败')
-			})
-		},
+        },
+        // 选择项改变
 		selectionChange (data) {
 			console.log(data)
 			this.selectionItems = data
 		},
 		addItem () {
 			this.bNewPage = true
-		},
+        },
+        // 编辑选中项
 		edit () {
 			if (this.selectionItems.length === 0) {
 				this.$Message.info('当前没有选中菜单项')
@@ -144,7 +148,8 @@ export default {
 				console.log(this.selectionItems[0])
 				this.editData = this.selectionItems[0]
 			}
-		},
+        },
+        // 删除选中项
 		del () {
 			if (this.selectionItems.length === 0) {
 				this.$Message.info('当前没有选中菜单项')
@@ -159,7 +164,7 @@ export default {
 			console.log(this.selectionItems)
 			_this.selectionItems.forEach(v => {
 				axios({
-					url: 'http://localhost:8081/api/Permission/Delete',
+					url: baseUrl + '/api/Permission/Delete',
 					method: 'DELETE',
 					params: { id: v.id },
 					headers: {
@@ -177,46 +182,52 @@ export default {
 		},
 		// 提交修改
 		submit () {
-			let req = {
-				'code': 'string',
-				'name': 'string',
-				'isButton': true,
-				'isHide': true,
-				'iskeepAlive': true,
-				'func': 'string',
-				'pid': 0,
-				'mid': 0,
-				'orderSort': 0,
-				'icon': 'string',
-				'description': 'string',
-				'enabled': true,
-				'createId': 0,
-				'createBy': 'string',
-				'createTime': '2020-05-29T02:17:06.136Z',
-				'modifyId': 0,
-				'modifyBy': 'string',
-				'modifyTime': '2020-05-29T02:17:06.136Z',
-				'isDeleted': true,
-				'pidArr': [
-					0
-				],
-				'pnameArr': [
-					'string'
-				],
-				'pCodeArr': [
-					'string'
-				],
-				'mName': 'string',
-				'hasChildren': true,
-				'id': 0
-			}
+			let _this = this
+			console.log(_this.editData)
+			let req = _this.editData
 			console.log(req)
+			axios({
+				url: baseUrl + '/api/Permission/Put',
+				method: 'PUT',
+				data: req,
+				headers: {
+					'Authorization': 'Bearer ' + _this.token
+				}
+			}).then(res => {
+				console.log(res)
+				_this.$Message['success']({
+					background: true,
+					content: res.data.msg,
+					duration: 10
+				})
+			}).catch(err => {
+				console.log(err)
+			})
 			// 修改完后 清理数据
-			this.editData = {}
+            _this.editData = {}
+            _this.selectionItems = []
+			// 重新获得列表数据
+			_this.getTableData()
 		},
 		// 新增页面
 		submititem () {
 
+		},
+		// 异步树形数据加载
+		handleLoadData (item, callback) {
+			axios({
+				url: baseUrl + '/api/Permission/GetTreeTable',
+				params: { f: item.Id },
+				methods: 'GET'
+			}).then((res) => {
+				let list = res.data.response
+				list.forEach(element => {
+					if (element.hasChildren) {
+						element = Object.assign(element, { _loading: false, children: [] })
+					}
+				})
+				callback(list)
+			})
 		}
 	}
 }
