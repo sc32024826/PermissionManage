@@ -10,14 +10,21 @@
 		<Modal title="新增页面接口" v-model="bNewPage" width="70%" @ok="submititem">
 			<Form :model="formData" label-position="left" :label-width="80">
 				<FormItem label="菜单名称">
-					<Input v-model="formData.name" placeholder="菜单名称" />
+					<Input v-model="formData.Name" placeholder="菜单名称" />
+				</FormItem>
+                <FormItem label="菜单描述">
+					<Input v-model="formData.Description" placeholder="描述" />
+				</FormItem>
+                <FormItem label="icon">
+					<Input v-model="formData.Icon" placeholder="图标,示例:&#xe715;" />
 				</FormItem>
 				<FormItem label="页面路径">
-					<Input v-model="formData.url" placeholder="相对路径,示例:/work/work" />
+					<Input v-model="formData.Code" placeholder="相对路径,示例:/work/work" />
 				</FormItem>
 				<FormItem label="接口路径">
-					<Input v-model="formData.api" placeholder="API接口,示例:/api/work/work" />
+					<Input v-model="formData.MName" placeholder="API接口,示例:/api/work/work" />
 				</FormItem>
+
 			</Form>
 		</Modal>
 		<Modal title="编辑项目" v-model="bEditModal" @on-ok="submit">
@@ -25,7 +32,7 @@
 				<FormItem label="菜单名称">
 					<Input v-model="editData.Name" />
 				</FormItem>
-                <FormItem label="菜单描述">
+				<FormItem label="菜单描述">
 					<Input v-model="editData.Description" />
 				</FormItem>
 				<FormItem label="icon">
@@ -128,16 +135,16 @@ export default {
 					duration: 3
 				})
 			})
-        },
-        // 选择项改变
+		},
+		// 选择项改变
 		selectionChange (data) {
 			console.log(data)
 			this.selectionItems = data
 		},
 		addItem () {
 			this.bNewPage = true
-        },
-        // 编辑选中项
+		},
+		// 编辑选中项
 		edit () {
 			if (this.selectionItems.length === 0) {
 				this.$Message.info('当前没有选中菜单项')
@@ -148,8 +155,8 @@ export default {
 				console.log(this.selectionItems[0])
 				this.editData = this.selectionItems[0]
 			}
-        },
-        // 删除选中项
+		},
+		// 删除选中项
 		del () {
 			if (this.selectionItems.length === 0) {
 				this.$Message.info('当前没有选中菜单项')
@@ -204,14 +211,34 @@ export default {
 				console.log(err)
 			})
 			// 修改完后 清理数据
-            _this.editData = {}
-            _this.selectionItems = []
+			_this.editData = {}
+			_this.selectionItems = []
 			// 重新获得列表数据
 			_this.getTableData()
 		},
 		// 新增页面
 		submititem () {
-
+			let form = ''
+			axios({
+				url: baseUrl + '/api/Permission/Post',
+				method: 'POST',
+				data: form,
+				headers: {
+					'Authorization': 'Bearer ' + _this.token
+				}
+			}).then(res => {
+				this.$Message['success']({
+					background: true,
+					content: res.data.response.msg,
+					duration: 3
+				})
+			}).catch(err => {
+				this.$Message['error']({
+					background: true,
+					content: err,
+					duration: 3
+				})
+			})
 		},
 		// 异步树形数据加载
 		handleLoadData (item, callback) {

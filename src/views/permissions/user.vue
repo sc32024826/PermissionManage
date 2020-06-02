@@ -1,12 +1,12 @@
 <template>
 	<div class="flex row">
 		<Card>
-			<Tables v-model="tableData" :columns="columns" width="300" @on-row-click="change"></Tables>
+			<Tables v-model="tableData" :columns="columns" @on-row-click="change"></Tables>
 		</Card>
 		<Card>
-			<RadioGroup v-model="Group">
+			<RadioGroup v-model="Group" vertical>
 				<h3>给所选用户分配权限组:</h3>
-				<Radio v-for="(item,i) in GroupList" :key="i" :label="item" border></Radio>
+				<Radio v-for="(item,i) in GroupList" :key="i" :label="item.Name" border class="Radio"></Radio>
 			</RadioGroup>
 			<div class="bottom-button">
 				<Button type="primary" @click="save" icon="" class="">保存</Button>
@@ -17,7 +17,9 @@
 <script>
 import Tables from '_c/tables'
 import Axios from 'axios'
-import store from '@/store'
+import { getToken } from '@/libs/util'
+import config from '@/config'
+const baseUrl = process.env.NODE_ENV === 'development' ? config.baseUrl.dev : config.baseUrl.pro
 
 export default {
 	name: 'userManage',
@@ -29,13 +31,11 @@ export default {
 				{ user: 'shanying', group: '普通' }
 			],
 			columns: [
-				{ title: 'id', key: 'Id', align: 'center' },
-				{ title: '用户名', key: 'Name', align: 'center' },
-				{ title: '描述', key: 'Description', align: 'center' }
-				// { title: '当前组', key: 'group', align: 'center' }
+				{ title: 'id', key: 'uID', align: 'center', width: 60 },
+				{ title: '用户名', key: 'uLoginName', align: 'center', width: 150 }
 			],
 			Group: '',
-			GroupList: ['root', '普通', '分组1', '分组2'],
+			GroupList: [],
 			temp: '' // 将选中账号的组 存入temp变量
 		}
 	},
@@ -53,26 +53,47 @@ export default {
 				this.$Message.info('未做修改!')
 			}
 		},
-		// 获取全部角色信息
-		getTableData () {
-            console.log(store.state.token)
+		// 获取全部user信息
+		getUserData () {
 			Axios({
-				url: 'http://localhost:8081/api/Role/Get',
+				url: baseUrl + '/api/User/Get',
 				method: 'GET',
-				params: { page: 1, key: '' },
+				// params: { page: 1, key: '' },
 				headers: {
-					'Authorization': 'Bearer ' + store.state.token
+					'Authorization': 'Bearer ' + this.token
 				}
 			}).then(res => {
-				console.log(res)
-                this.tableData = res.data.response.data
+				console.log(res.data.response.data)
+				this.tableData = res.data.response.data
 			}).catch(err => {
-				console.log(err)
+				this.$Message['error']({
+					background: true,
+					content: err
+				})
+			})
+		},
+		// 获取角色信息
+		getRoleData () {
+			Axios({
+				url: baseUrl + '/api/Role/Get',
+				method: 'GET',
+				headers: {
+					'Authorization': 'Bearer ' + this.token
+				}
+			}).then(res => {
+				console.log(res.data.response)
+				this.GroupList = res.data.response.data
 			})
 		}
 	},
 	mounted () {
-		this.getTableData()
+		this.getUserData()
+		this.getRoleData()
+	},
+	computed: {
+		token: function () {
+			return getToken()
+		}
 	}
 }
 </script>
@@ -100,5 +121,8 @@ export default {
 .bottom-button {
 	margin-top: 50px;
 	margin-bottom: 10px;
+}
+.Radio {
+    margin-bottom: 5px;
 }
 </style>
