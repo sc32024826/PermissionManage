@@ -1,13 +1,13 @@
 <template>
 	<div class="flex row">
 		<Card>
-			<Tables v-model="tableData" :columns="columns" @on-row-click="change"></Tables>
+			<Tables v-model="tableData" :columns="columns" @on-current-change="change" highlight-row></Tables>
 		</Card>
 		<Card>
-			<RadioGroup v-model="Group" vertical>
+			<CheckboxGroup v-model="Group" class="flex column">
 				<h3>给所选用户分配权限组:</h3>
-				<Radio v-for="(item,i) in GroupList" :key="i" :label="item.Name" border class="Radio"></Radio>
-			</RadioGroup>
+				<Checkbox v-for="(item,i) in GroupList" :key="i" :label="item.Id" border class="checkbox">{{item.Name}}</Checkbox>
+			</CheckboxGroup>
 			<div class="bottom-button">
 				<Button type="primary" @click="save" icon="" class="">保存</Button>
 			</div>
@@ -26,32 +26,56 @@ export default {
 	components: { Tables },
 	data () {
 		return {
-			tableData: [
-				{ user: 'root', group: 'root' },
-				{ user: 'shanying', group: '普通' }
-			],
+			tableData: [],
 			columns: [
 				{ title: 'id', key: 'uID', align: 'center', width: 60 },
 				{ title: '用户名', key: 'uLoginName', align: 'center', width: 150 }
 			],
-			Group: '',
+			Group: [],
 			GroupList: [],
-			temp: '' // 将选中账号的组 存入temp变量
+			temp: '', // 将选中账号的组 存入temp变量
+			currentUser: {} // 当前选中的角色
 		}
 	},
 	methods: {
 		// 点击单行时触发
 		change (data) {
 			console.log(data)
-			this.Group = data.group
-			this.temp = data.group
+			this.temp = data.RIDs
+			this.Group = data.RIDs
+			this.currentUser = data
 		},
 		save () {
 			// 当前组
+			this.currentUser.RIDs = this.Group
+			// console.log(this.currentUser)
 			console.log(this.Group)
 			if (this.Group === this.temp) {
 				this.$Message.info('未做修改!')
 			}
+			Axios({
+				url: baseUrl + '/api/User/Put',
+				method: 'PUT',
+				data: this.currentUser,
+				headers: {
+					'Authorization': 'Bearer ' + this.token
+				}
+			}).then(res => {
+				// 修改成功 刷新页面
+				console.log(res.data)
+				this.$Message['success']({
+					background: true,
+					content: res.data.msg
+				})
+                this.update()
+                this.clear()
+			}).catch(err => {
+				// 修改失败
+				this.$Message['error']({
+					background: true,
+					content: err
+				})
+			})
 		},
 		// 获取全部user信息
 		getUserData () {
@@ -68,7 +92,7 @@ export default {
 			}).catch(err => {
 				this.$Message['error']({
 					background: true,
-					content: err
+					content: err + '请重新登录!'
 				})
 			})
 		},
@@ -83,12 +107,26 @@ export default {
 			}).then(res => {
 				console.log(res.data.response)
 				this.GroupList = res.data.response.data
+			}).catch(err => {
+				this.$Message['error']({
+					background: true,
+					content: err + '请重新登录!'
+				})
 			})
+		},
+		update () {
+			this.getUserData()
+			this.getRoleData()
+		},
+		clear () {
+			this.Group = []
+			this.currentUser = {}
+            this.temp = ''
 		}
 	},
 	mounted () {
-		this.getUserData()
-		this.getRoleData()
+		this.update()
+		// console.log(this.token)
 	},
 	computed: {
 		token: function () {
@@ -122,7 +160,7 @@ export default {
 	margin-top: 50px;
 	margin-bottom: 10px;
 }
-.Radio {
-    margin-bottom: 5px;
+.checkbox {
+	margin: 5px 5px 0 0;
 }
 </style>
