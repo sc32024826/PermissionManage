@@ -5,8 +5,40 @@
 </template>
 
 <script>
+import applicationUserManager from './Auth/applicationusermanager'
+import userAuth from './Auth/UserAuth'
+
 export default {
-	name: 'App'
+    name: 'App',
+    mixins: [userAuth],
+    data: function () {
+        return {}
+    },
+    watch: {
+        $route: async function (to, from) {
+            // 这里使用Id4授权认证，用Jwt，请删之；
+            await this.refreshUserInfo()
+        }
+    },
+    methods: {
+        async login () {
+            try {
+                await applicationUserManager.login()
+            } catch (error) {
+                console.log(error)
+                this.$root.$emit('show-snackbar', { message: error })
+            }
+        },
+        async logout () {
+            try {
+                await applicationUserManager.logout()
+                this.$store.commit('saveToken', '')
+            } catch (error) {
+                console.log(error)
+                this.$root.$emit('show-snackbar', { message: error })
+            }
+        }
+    }
 }
 </script>
 

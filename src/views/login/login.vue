@@ -47,7 +47,7 @@ export default {
 			this.$router.push('/home')
 		} else {
 			console.log('未登录')
-			this.login()
+			// this.login()
 		}
 	}
 }

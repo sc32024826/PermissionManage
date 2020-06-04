@@ -67,8 +67,8 @@ export default {
 					background: true,
 					content: res.data.msg
 				})
-                this.update()
-                this.clear()
+				this.update()
+				this.clear()
 			}).catch(err => {
 				// 修改失败
 				this.$Message['error']({
@@ -82,17 +82,18 @@ export default {
 			Axios({
 				url: baseUrl + '/api/User/Get',
 				method: 'GET',
-				// params: { page: 1, key: '' },
+				params: { page: 1, key: '' },
 				headers: {
 					'Authorization': 'Bearer ' + this.token
 				}
 			}).then(res => {
-				console.log(res.data.response.data)
+				console.log(res)
 				this.tableData = res.data.response.data
 			}).catch(err => {
 				this.$Message['error']({
 					background: true,
-					content: err + '请重新登录!'
+					content: err + '请重新登录!',
+					duration: 10
 				})
 			})
 		},
@@ -121,7 +122,7 @@ export default {
 		clear () {
 			this.Group = []
 			this.currentUser = {}
-            this.temp = ''
+			this.temp = ''
 		}
 	},
 	mounted () {

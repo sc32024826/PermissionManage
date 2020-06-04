@@ -1,28 +1,53 @@
 <template>
 	<div>
 		<div class="toolBar">
-			<Button type="primary" icon="md-add" @click="addItem">增加</Button>
+			<Button type="primary" icon="md-add" @click="OpenModalNew">增加</Button>
 			<Button type="warning" icon="md-create" @click="edit">修改选中项</Button>
 			<Button type="error" icon="md-trash" @click="del">删除选中项</Button>
 		</div>
 		<Table :data="tableData" :columns="columns" row-key="Id" :load-data="handleLoadData" @on-selection-change="selectionChange">
 		</Table>
-		<Modal title="新增页面接口" v-model="bNewPage" width="70%" @ok="submititem">
+		<Modal title="新增页面接口" v-model="bNewPage" width="70%" @on-ok="submititem">
 			<Form :model="formData" label-position="left" :label-width="80">
 				<FormItem label="菜单名称">
 					<Input v-model="formData.Name" placeholder="菜单名称" />
 				</FormItem>
-                <FormItem label="菜单描述">
-					<Input v-model="formData.Description" placeholder="描述" />
-				</FormItem>
-                <FormItem label="icon">
-					<Input v-model="formData.Icon" placeholder="图标,示例:&#xe715;" />
-				</FormItem>
-				<FormItem label="页面路径">
+				<FormItem label="路由地址">
 					<Input v-model="formData.Code" placeholder="相对路径,示例:/work/work" />
 				</FormItem>
-				<FormItem label="接口路径">
-					<Input v-model="formData.MName" placeholder="API接口,示例:/api/work/work" />
+				<FormItem label="描述">
+					<Input v-model="formData.Description" placeholder="描述" />
+				</FormItem>
+				<FormItem label="状态">
+					<Select v-model="formData.Enabled" style="width:200px">
+						<Option v-for="item in state" :value="item.value" :key="item.value">{{ item.label }}</Option>
+					</Select>
+				</FormItem>
+				<FormItem label="排序">
+					<Input v-model="formData.OrderSort" style="width:200px" />
+				</FormItem>
+				<FormItem label="是否按钮">
+					<Switch v-model="formData.IsButton" @on-change="IsButtonchange" />
+				</FormItem>
+				<FormItem label="按钮事件">
+					<Input v-model="formData.Func" />
+				</FormItem>
+				<FormItem label="隐藏菜单">
+					<Switch v-model="formData.IsHide" @on-change="IsHidechange" />
+				</FormItem>
+				<FormItem label="KeepAlive">
+					<Switch v-model="formData.IskeepAlive" @on-change="IskeepAlivechange" />
+				</FormItem>
+				<FormItem label="icon">
+					<Input v-model="formData.Icon" placeholder="图标,示例:&#xe715;" />
+				</FormItem>
+				<FormItem label="父级菜单">
+					<Cascader :data="options" v-model="formData.PidArr"></Cascader>
+				</FormItem>
+				<FormItem label="API接口">
+					<Select v-model="formData.Mid">
+						<Option v-for="item in modules" :value="item.value" :key="item.value">{{ item.label }}</Option>
+					</Select>
 				</FormItem>
 
 			</Form>
@@ -55,11 +80,9 @@
 
 <script>
 // import store from '@/store'
-import axios from 'axios'
 import { mapActions } from 'vuex'
 import { getToken } from '@/libs/util'
-import config from '@/config'
-const baseUrl = process.env.NODE_ENV === 'development' ? config.baseUrl.dev : config.baseUrl.pro
+import { getPermissionTreeTable, removePermission, editPermission, addPermission, getPermissionTree } from '@/api/data.js'
 
 export default {
 	name: 'menuManage',
@@ -77,18 +100,42 @@ export default {
 			],
 			loading: false,
 			bNewPage: false,
-			formData: {},
+			formData: {
+				Code: '',
+				Name: '',
+				IsHide: false,
+				Pid: 0,
+				Mid: 0,
+				Enabled: 1,
+				OrderSort: 0,
+				IsButton: false,
+				IskeepAlive: 0,
+				Icon: '',
+				Description: '',
+				PidArr: [],
+				MName: ''
+			},
 			selectionItems: [], // 当前被选中的项
 			editData: {}, // 当前编辑项内容
 			bEditModal: false,
 			bDeleteConfirmModal: false,
-			length: 0
+			length: 0,
+			state: [
+				{ label: '激活', value: 1 },
+				{ label: '禁用', value: 0 }
+			],
+			page: 1, // 分页查询页码
+			filters: { // 筛选条件
+				Name: ''
+			},
+			options: [], // 菜单节点
+			modules: [] // api接口
 		}
 	},
 	mounted () {
 		// 获得菜单列表数据
-		this.isLogin()
-		// console.log(baseUrl)
+		this.getTableData()
+		// console.log(this.token)
 	},
 	computed: {
 		token: function () {
@@ -99,36 +146,24 @@ export default {
 		...mapActions([
 			'handleLogin'
 		]),
-		// 判断是否登录
-		isLogin () {
-			console.log(this.token)
-
-			if (this.token !== 'undefined') {
-				console.log('token')
-				this.getTableData()
-			} else {
-				// 跳转到登录页面
-				console.log('跳转到登录页面')
-				debugger
-				this.getTableData()
-			}
-		},
 		// 显示菜单列表
 		getTableData () {
-			axios({
-				url: baseUrl + '/api/Permission/GetTreeTable',
-				methods: 'GET'
-			}).then((res) => {
+			let para = {
+				page: this.page,
+				key: this.filters.Name
+			}
+			getPermissionTreeTable(para).then(res => {
+                console.log(res.data)
 				let list = res.data.response
-				list.forEach(element => {
-					if (element.hasChildren) {
-						element = Object.assign(element, { _loading: false, children: [] })
-					}
-				})
-				this.tableData = list
-				console.log(list)
-			}).catch((err) => {
-				console.log(err)
+				if (list) {
+					list.forEach(element => {
+						if (element.hasChildren) {
+							element = Object.assign(element, { _loading: false, children: [] })
+						}
+					})
+					this.tableData = list
+				}
+			}).catch(err => {
 				this.$Message['error']({
 					background: true,
 					content: err,
@@ -140,9 +175,6 @@ export default {
 		selectionChange (data) {
 			console.log(data)
 			this.selectionItems = data
-		},
-		addItem () {
-			this.bNewPage = true
 		},
 		// 编辑选中项
 		edit () {
@@ -156,97 +188,66 @@ export default {
 				this.editData = this.selectionItems[0]
 			}
 		},
+		// 打开新增的modal
+		OpenModalNew () {
+			this.bNewPage = true
+			// 读取父节点 列表
+			let para = { pid: 0 }
+			getPermissionTree(para).then(res => {
+				// this.options.push(res.data.response)
+				console.log(res)
+			})
+			// 读取api 列表
+		},
 		// 删除选中项
 		del () {
 			if (this.selectionItems.length === 0) {
 				this.$Message.info('当前没有选中菜单项')
+			} else if (this.selectionItems.length > 1) {
+				this.$Message.info('请选中其中一项')
 			} else {
-				this.length = this.selectionItems.length
 				this.bDeleteConfirmModal = true
 			}
 		},
 		// 根据菜单id 删除菜单
 		confirmDel () {
-			let _this = this
-			console.log(this.selectionItems)
-			_this.selectionItems.forEach(v => {
-				axios({
-					url: baseUrl + '/api/Permission/Delete',
-					method: 'DELETE',
-					params: { id: v.id },
-					headers: {
-						'Authorization': 'Bearer ' + _this.token
-					}
-				}).then(res => {
-					_this.$Message.info(res.data.msg)
-				}).catch(err => {
-					_this.$Message.info(err)
-				})
+			let para = {
+				id: this.selectionItems[0].id
+			}
+			removePermission(para).then(res => {
+				console.log(res.data)
 			})
 			// 删除完之后 清空
-			_this.selectionItems = []
-			_this.getTableData()
+			this.selectionItems = []
+			this.getTableData()
 		},
 		// 提交修改
 		submit () {
-			let _this = this
-			console.log(_this.editData)
-			let req = _this.editData
-			console.log(req)
-			axios({
-				url: baseUrl + '/api/Permission/Put',
-				method: 'PUT',
-				data: req,
-				headers: {
-					'Authorization': 'Bearer ' + _this.token
-				}
-			}).then(res => {
-				console.log(res)
-				_this.$Message['success']({
-					background: true,
-					content: res.data.msg,
-					duration: 10
-				})
-			}).catch(err => {
-				console.log(err)
+			let para = this.editData
+			console.log(para)
+			editPermission(para).then(res => {
+				console.log(res.data)
+				// 修改完后 清理数据
+				this.editData = {}
+				this.selectionItems = []
+				// 重新获得列表数据
+				this.getTableData()
 			})
-			// 修改完后 清理数据
-			_this.editData = {}
-			_this.selectionItems = []
-			// 重新获得列表数据
-			_this.getTableData()
 		},
 		// 新增页面
 		submititem () {
-			let form = ''
-			axios({
-				url: baseUrl + '/api/Permission/Post',
-				method: 'POST',
-				data: form,
-				headers: {
-					'Authorization': 'Bearer ' + _this.token
-				}
-			}).then(res => {
-				this.$Message['success']({
-					background: true,
-					content: res.data.response.msg,
-					duration: 3
-				})
-			}).catch(err => {
-				this.$Message['error']({
-					background: true,
-					content: err,
-					duration: 3
-				})
+			let para = this.formData
+			console.log(para)
+			addPermission(para).then(res => {
+                console.log(res.data)
 			})
 		},
 		// 异步树形数据加载
 		handleLoadData (item, callback) {
-			axios({
-				url: baseUrl + '/api/Permission/GetTreeTable',
-				params: { f: item.Id },
-				methods: 'GET'
-			}).then((res) => {
+			let para = {
+				f: item.Id
+			}
+			getPermissionTreeTable(para).then(res => {
 				let list = res.data.response
 				list.forEach(element => {
 					if (element.hasChildren) {
@@ -255,6 +256,15 @@ export default {
 				})
 				callback(list)
 			})
+		},
+		IsButtonchange (val) {
+			this.formData.IsButton = val
+		},
+		IsHidechange (val) {
+			this.formData.IsHide = val
+		},
+		IskeepAlivechange (val) {
+			this.formData.IskeepAlive = val
 		}
 	}
 }

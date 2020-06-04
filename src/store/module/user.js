@@ -1,14 +1,3 @@
-import {
-    login,
-    logout,
-    getUserInfo,
-    getMessage,
-    getContentByMsgId,
-    hasRead,
-    removeReaded,
-    restoreTrash,
-    getUnreadCount
-} from '@/api/user'
 import { setToken, getToken } from '@/libs/util'
 
 export default {
@@ -23,12 +12,17 @@ export default {
         messageUnreadList: [],
         messageReadedList: [],
         messageTrashList: [],
-        messageContentStore: {}
+        messageContentStore: {},
+        TokenExpire: null
     },
     mutations: {
         setToken (state, token) {
             state.token = token
             setToken(token)
+        },
+        saveTokenExpire (state, data) {
+            state.tokenExpire = data
+            window.localStorage.setItem('TokenExpire', data)
         }
     },
     getters: {

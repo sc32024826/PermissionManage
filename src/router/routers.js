@@ -19,6 +19,15 @@ import Main from '@/components/main'
 
 export default [
     {
+        path: '/callback',
+        name: 'LoginCallbackView',
+        meta: {
+            hideInMenu: true
+        },
+        component: () =>
+            import('@/views/LoginCallbackView.vue')
+    },
+    {
         path: '/loginout',
         name: 'loginout',
         component: Main,
@@ -27,15 +36,6 @@ export default [
             icon: 'md-home'
         },
         children: [
-            {
-                path: '/login',
-                name: 'login',
-                meta: {
-                    title: 'Login - 登录',
-                    icon: 'md-home'
-                },
-                component: () => import('@/views/login/login')
-            },
             {
                 path: '/out',
                 name: 'out',
