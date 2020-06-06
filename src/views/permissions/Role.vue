@@ -4,22 +4,18 @@
 		<div class="flex">
 			<Card>
 				<Tables v-model="tableData" :columns="columns" width=400 @on-current-change="change" highlight-row></Tables>
-				<Button type="primary" @click="fresh" class="bottom">刷新</Button>
-
+				<Button type="primary" @click="fresh" class="bottom" :disbale="freshdisable">刷新</Button>
 			</Card>
 			<Card>
 				<Tables v-model="pageList" :columns="myColumns" :loading="loading"></Tables>
-				<Button type="primary" icon="" @click="save" class="bottom">保存</Button>
+				<Button type="primary" icon="" @click="save" class="bottom" :disbale="savedisable">保存</Button>
 			</Card>
 		</div>
 	</div>
 </template>
 <script>
 import Tables from '_c/tables'
-import Axios from 'axios'
-import { getToken } from '@/libs/util'
-import config from '@/config'
-const baseUrl = process.env.NODE_ENV === 'development' ? config.baseUrl.dev : config.baseUrl.pro
+import { getRoleListPage, getPermissionIds } from '@/api/data'
 
 export default {
 	components: { Tables },
@@ -57,56 +53,68 @@ export default {
 			],
 			per: {}, // 各页面权限
 			temp: {},
-			loading: true
+			loading: false,
+			page: 1,
+			filter: {
+				name: ''
+			},
+			freshdisable: false,
+			savedisable: false
 		}
 	},
 	methods: {
 		// 权限组改变
 		change (data) {
-			console.log(data)
+			console.log(data.id)
+			this.loading = true
+			this.getPermission(data.id)
 			// this.per = data.permision
 			// this.temp = data.permision
 		},
 		save () {
+			this.savedisable = true
 			if (this.per === this.temp) {
 				this.$Message.info('内容没有改变!')
+				return
 			}
+			setTimeout(() => {
+				this.savedisable = false
+			}, 1000)
 		},
 		// 获得所有权限组-角色
 		getRoleData () {
-			Axios({
-				url: 'http://localhost/api/Role/Get',
-				method: 'GET',
-				params: {
-					page: 1,
-					key: ''
-				},
-				headers: {
-					Authorization: 'Bearer ' + this.token
+			let para = {
+				page: this.page
+			}
+			getRoleListPage(para).then(res => {
+				console.log(res)
+				if (res.data) {
+					this.tableData = res.data.response.data
 				}
-			}).then(res => {
-				console.log(res.data)
-
-				this.tableData = res.data.response.data
 			}).catch(err => {
-				this.$Message['error']({
-					background: true,
-					content: err
-				})
+				console.log(err)
+			})
+		},
+		getPermission (id) {
+			let para = {
+				id: id
+			}
+			getPermissionIds(para).then(res => {
+				console.log(res.data)
+				this.pageList = res.data.response.permissionids
+				this.loading = false
 			})
 		},
 		fresh () {
+			this.freshdisable = true
 			this.getRoleData()
+			setTimeout(() => {
+				this.freshdisable = false
+			}, 1000)
 		}
 	},
 	mounted () {
 		this.getRoleData()
-		// console.log(this.token)
-	},
-	computed: {
-		token: () => {
-			return getToken()
-		}
 	}
 }
 </script>

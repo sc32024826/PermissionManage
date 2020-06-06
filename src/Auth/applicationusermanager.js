@@ -8,12 +8,14 @@ class ApplicationUserManager extends UserManager {
             redirect_uri: 'http://localhost:8080/callback', // 登录回调地址
             response_type: 'id_token token',
             scope: 'openid profile roles shanying.services.api', // 作用域也要一一匹配
-            post_logout_redirect_uri: 'http://localhost:8080' // 登出后回调地址
+            post_logout_redirect_uri: 'http://localhost:8080/home', // 登出后回调地址
+            automaticSilentRenew: true
         })
     }
 
     async login () {
         await this.signinRedirect()
+        console.log('认证完毕', new Date())
         return this.getUser()
     }
 

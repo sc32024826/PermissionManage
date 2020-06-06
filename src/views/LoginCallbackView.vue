@@ -7,7 +7,7 @@
 	</div>
 </template>
 <script>
-import applicationUserManager from '../Auth/applicationusermanager'
+import applicationUserManager from '@/Auth/applicationusermanager'
 
 export default {
 	name: 'logincallback-view',
@@ -17,24 +17,24 @@ export default {
 	},
 	async created () {
 		try {
+            console.log('================登录===================')
 			// 核心的就是这里了
 			await applicationUserManager.signinRedirectCallback()
-			let user = await applicationUserManager.getUser()
-			// console.log('===========USER====================')
+            let user = await applicationUserManager.getUser()
+            console.log(user)
+			let curTime = new Date()
+			let expiredate = new Date(
+				curTime.setSeconds(curTime.getSeconds() + user.expires_in)
+			)
 			// console.log(user)
-			// axios.get('https://protal.servers.mchains.cn/connect/userinfo', {
-			//     headers: { 'Content-Type': 'application/json' },
-			//     params: {
-			//         Authorization: 'Bearer ' + user
-			//     }
-
-			// }).then(res => {
-			//     console.log(res)
-			// }).catch(err => {
-			//     console.log(err)
-			// })
 			// 将 token 存储在客户端
 			this.$store.commit('setToken', user.access_token)
+			// 存储 token 过期时间
+			// console.log('存储token过期时间:', expiredate)
+			this.$store.commit('saveTokenExpire', expiredate)
+
+			window.localStorage.refreshtime = expiredate
+			window.localStorage.expires_in = user.expires_in
 			// 调整首页
 			this.$router.push({ name: 'home' })
 		} catch (e) {

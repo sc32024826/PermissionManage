@@ -19,9 +19,10 @@ export default {
         setToken (state, token) {
             state.token = token
             setToken(token)
+            window.localStorage.setItem('Token', token)
         },
         saveTokenExpire (state, data) {
-            state.tokenExpire = data
+            state.TokenExpire = data
             window.localStorage.setItem('TokenExpire', data)
         }
     },

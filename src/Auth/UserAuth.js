@@ -10,6 +10,7 @@ const userAuth = {
     },
     methods: {
         async refreshUserInfo () { // 获取用户信息
+            console.log('刷新数据')
             const user = await applicationUserManager.getUser()
             if (user) {
                 this.user.name = user.profile.name

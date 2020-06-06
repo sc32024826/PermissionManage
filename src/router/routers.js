@@ -28,58 +28,44 @@ export default [
             import('@/views/LoginCallbackView.vue')
     },
     {
-        path: '/loginout',
-        name: 'loginout',
-        component: Main,
-        meta: {
-            title: '登入/登出',
-            icon: 'md-home'
-        },
-        children: [
-            {
-                path: '/out',
-                name: 'out',
-                meta: {
-                    title: '登出',
-                    icon: 'md-home'
-                },
-                component: () => import('@/views/login/loginout')
-            }
-        ]
-    },
-    {
         path: '/',
         name: '_home',
-        redirect: '/home',
         component: Main,
         meta: {
+            icon: 'md-home',
             hideInMenu: true,
             notCache: true
         },
-        children: [
-            {
-                path: '/home',
-                name: 'home',
-                meta: {
-                    hideInMenu: true,
-                    title: '首页',
-                    notCache: true,
-                    requireAuth: true
-                },
-                component: () => import('@/view/single-page/home')
-            }
-        ]
+        children: [{
+            path: '/home',
+            name: 'home',
+            meta: {
+                title: '首页',
+                notCache: true,
+                icon: 'md-home',
+                requireAuth: true
+            },
+            component: () => import('@/view/single-page/home')
+        }]
+    },
+    {
+        path: '/welcome',
+        name: 'welcome',
+        meta: {
+            notCache: true,
+            title: '欢迎页',
+            icon: 'md-home'
+        },
+        component: () => import('@/views/welcome/welcome')
     },
     {
         path: '/permission',
         name: 'permission',
-        redirect: '/permission',
         component: Main,
         meta: {
             title: '权限',
             notCache: true,
             icon: 'md-home'
-
         },
         children: [
             {
@@ -113,7 +99,7 @@ export default [
                     icon: 'md-home',
                     requireAuth: true
                 },
-                component: () => import('@/views/permissions/manage')
+                component: () => import('@/views/permissions/Role')
             }
         ]
     },
@@ -150,25 +136,17 @@ export default [
     //       icon: 'ios-book'
     //     }
     //   },
-    //   {
+    // {
     //     path: '/join',
     //     name: 'join',
-    //     component: Main,
+    //     // component: Main,
     //     meta: {
-    //       hideInBread: true
+    //         hideInBread: true,
+    //         icon: '_qq',
+    //         title: 'QQ群'
     //     },
-    //     children: [
-    //       {
-    //         path: 'join_page',
-    //         name: 'join_page',
-    //         meta: {
-    //           icon: '_qq',
-    //           title: 'QQ群'
-    //         },
-    //         component: () => import('@/view/join-page.vue')
-    //       }
-    //     ]
-    //   },
+    //     component: () => import('@/views/test.vue')
+    // }
     //   {
     //     path: '/message',
     //     name: 'message',
