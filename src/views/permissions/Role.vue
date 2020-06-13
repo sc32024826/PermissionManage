@@ -92,7 +92,7 @@ export default {
 					this.tableData = res.data.response.data
 				}
 			}).catch(err => {
-				console.log(err)
+				this.$throw(err)
 			})
 		},
 		getPermission (id) {
@@ -103,6 +103,8 @@ export default {
 				console.log(res.data)
 				this.pageList = res.data.response.permissionids
 				this.loading = false
+			}).catch(err => {
+				this.$throw(err)
 			})
 		},
 		fresh () {

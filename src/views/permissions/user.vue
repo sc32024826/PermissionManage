@@ -88,7 +88,8 @@ export default {
 				console.log(res.data)
 				this.tableData = res.data.response.data
 			}).catch(err => {
-				console.log(err)
+                console.log(err)
+                // this.$throw(err)
 				this.$Message['error']({
 					background: true,
 					content: err,
@@ -134,7 +135,6 @@ export default {
 	},
 	mounted () {
 		this.update()
-		// console.log(this.token)
 	},
 	computed: {
 		token: function () {

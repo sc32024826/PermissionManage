@@ -17,7 +17,7 @@ export default {
 	},
 	async created () {
 		try {
-            console.log('================登录===================')
+            console.log('================登录=================')
 			// 核心的就是这里了
 			await applicationUserManager.signinRedirectCallback()
             let user = await applicationUserManager.getUser()
@@ -26,12 +26,9 @@ export default {
 			let expiredate = new Date(
 				curTime.setSeconds(curTime.getSeconds() + user.expires_in)
 			)
-			// console.log(user)
-			// 将 token 存储在客户端
 			this.$store.commit('setToken', user.access_token)
 			// 存储 token 过期时间
-			// console.log('存储token过期时间:', expiredate)
-			this.$store.commit('saveTokenExpire', expiredate)
+			// this.$store.commit('saveTokenExpire', expiredate)
 
 			window.localStorage.refreshtime = expiredate
 			window.localStorage.expires_in = user.expires_in

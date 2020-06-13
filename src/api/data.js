@@ -1,7 +1,7 @@
 import axios from 'axios'
 import applicationUserManager from '../Auth/applicationusermanager'
 import store from '@/store'
-import Vue from 'vue'
+import { Message } from 'view-design'
 
 let base = 'http://localhost:80'
 
@@ -10,21 +10,11 @@ axios.defaults.timeout = 20000
 
 axios.interceptors.request.use(
     config => {
-        var curTime = new Date()
-        console.log(curTime)
-        try {
-            var expiretime = new Date(Date.parse(store.state.user.TokenExpire))
-            console.log(expiretime)
-        } catch (err) {
-            console.log(err)
-        }
-        // storeTemp.state.user.token && (curTime < expiretime && storeTemp.state.user.tokenExpire)
-        if (store.state.user.token && (curTime < expiretime && store.state.user.TokenExpire)) {
+        if (store.state.user.token) {
             console.log('添加 Authorization')
             // 判断是否存在token，如果存在的话，则每个http header都加上token
             config.headers.Authorization = 'Bearer ' + store.state.user.token
         }
-        saveRefreshtime()
         return config
     },
     err => {
@@ -41,123 +31,63 @@ axios.interceptors.response.use(
         // 超时请求处理
         var originalRequest = error.config
         if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1 && !originalRequest._retry) {
-            Vue.prototype.$message({
-                message: '请求超时！',
-                type: 'error'
-            })
+            Message.error('请求超时！')
 
             originalRequest._retry = true
             return null
         }
 
         if (error.response) {
+            console.log(error)
+            debugger
             if (error.response.status === 401) {
-                var curTime = new Date()
-                try {
-                    var refreshtime = new Date(Date.parse(window.localStorage.refreshtime))
-                    console.log('refreshtime:', refreshtime)
-                } catch (ERR) {
-                    console.log(ERR)
-                }
-                console.log('在用户操作的活跃期内: ', window.localStorage.refreshtime)
-                // 在用户操作的活跃期内
-                if (window.localStorage.refreshtime && (curTime <= refreshtime)) {
-                    // console.log('在用户操作的活跃期内')
-                    // console.log(window.localStorage.Token)
-                    // return ''
-                    // return refreshToken({ token: window.localStorage.Token }).then((res) => {
-                    //     console.log(res)
-                    //     if (res.success) {
-                    //         Vue.prototype.$message({
-                    //             message: 'refreshToken success! loading data...',
-                    //             type: 'success'
-                    //         })
-
-                    //         store.commit('setToken', res.response.token)
-
-                    //         var curTime = new Date()
-                    //         var expiredate = new Date(curTime.setSeconds(curTime.getSeconds() + res.response.expires_in))
-                    //         console.log(res.response.expires_in)
-                    //         store.commit('saveTokenExpire', expiredate)
-
-                    //         error.config.__isRetryRequest = true
-                    //         error.config.headers.Authorization = 'Bearer ' + res.response.token
-                    //         return axios(error.config)
-                    //     } else {
-                    //         // 刷新token失败 清除token信息并跳转到登录页面
-                            ToLogin()
-                    //     }
-                    // })
-                } else {
-                    console.log('登录失效')
-                    // 返回 401，并且不知用户操作活跃期内 清除token信息并跳转到登录页面
+                if (store.state.user.token === 'undefined') {
+                    debugger
                     ToLogin()
                 }
             }
             // 403 无权限
             if (error.response.status === 403) {
-                Vue.prototype.$message({
-                    message: '失败！该操作无权限',
-                    type: 'error'
-                })
+                Message('失败！该操作无权限')
                 return null
             }
             // 429 ip限流
             if (error.response.status === 429) {
-                Vue.prototype.$message({
-                    message: '刷新次数过多，请稍事休息重试！',
-                    type: 'error'
-                })
+                Message('刷新次数过多，请稍事休息重试！')
                 return null
             }
+            debugger
+            addErrorLog(error.response)
         }
         return '' // 返回接口返回的错误信息
     }
 )
+const addErrorLog = errorInfo => {
+    const { statusText, status, request: { responseURL } } = errorInfo
+    let info = {
+        type: 'ajax',
+        code: status,
+        mes: statusText,
+        url: responseURL
+    }
+    console.log(info)
+    if (!responseURL.includes('save_error_logger')) {
+        debugger
+        store.dispatch('addErrorLog', info)
+    }
+}
 
 export const BaseApiUrl = base
 
-// 登录
-export const requestLogin = params => {
-    return axios.get(`${base}/api/login/jwttoken3.0`, { params: params }).then(res => res.data)
-}
-
-export const refreshToken = params => {
-    return axios.get(`${base}/api/login/RefreshToken`, { params: params }).then(res => res.data)
-}
-export const saveRefreshtime = params => {
-    let nowtime = new Date()
-    let lastRefreshtime = window.localStorage.refreshtime ? new Date(window.localStorage.refreshtime) : new Date(-1)
-    let expiretime = new Date(Date.parse(window.localStorage.TokenExpire))
-
-    let refreshCount = 1 // 滑动系数
-    if (lastRefreshtime >= nowtime) {
-        lastRefreshtime = nowtime > expiretime ? nowtime : expiretime
-        lastRefreshtime.setMinutes(lastRefreshtime.getMinutes() + refreshCount)
-        window.localStorage.refreshtime = lastRefreshtime
-    } else {
-        window.localStorage.refreshtime = new Date(-1)
-    }
-}
-const ToLogin = params => {
+// export const refreshToken = params => {
+//     return axios.get(`${base}/api/login/RefreshToken`, { params: params }).then(res => res.data)
+// }
+const ToLogin = () => {
     console.log('登录前 清空')
     store.commit('setToken', '')
-    store.commit('saveTokenExpire', '')
-    // store.commit('saveTagsData', '')
     window.localStorage.removeItem('user')
     window.localStorage.removeItem('NavigationBar')
-
-    // console.log(global.IS_IDS4)
-    // if (global.IS_IDS4) {
     applicationUserManager.login()
-    // } else {
-    //     router.replace({
-    //         path: '/login',
-    //         query: { redirect: router.currentRoute.fullPath }
-    //     })
-
-    //     window.location.reload()
-    // }
 }
 // 菜单模块管理
 export const getPermissionListPage = params => {
@@ -234,6 +164,9 @@ export const batchRemoveUser = params => {
     return axios.delete(`${base}/api/Claims/BatchDelete`, { params: params }) // 没做
 }
 
+// 错误日志
 export const saveErrorLogger = params => {
-    return ''
+    // return axios.post(`${base}/api/Logger/SubmitLogInformation`, { params: params })
+    // return axios.post('http://test-api.servers.mchains.cn/api/Logger/SubmitLogInformation', params)
+    return axios.post('http://172.18.20.142/api/Logger/SubmitLogInformation', params)
 }

@@ -29,18 +29,22 @@ router.beforeEach((to, from, next) => {
     //     store.commit('setToken', window.localStorage.Token)
     // }
     if (to.meta.requireAuth) {
+        debugger
         // 判断该路由是否需要登录权限
         if (token && token !== 'undefined') {
             // 通过vuex state获取当前的token是否存在
             console.log('已经登录,直接跳转: ', to)
+            debugger
             next()
         } else {
+            debugger
             console.log('未登录,前往认证', new Date())
             // 这里使用Id4授权认证，用Jwt，请删之，并把下边的跳转login 打开；
             applicationUserManager.login()
         }
     } else {
         console.log('该路由不需要登录,直接跳转: ', to)
+        debugger
         next()
     }
 })

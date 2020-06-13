@@ -14,12 +14,14 @@ class ApplicationUserManager extends UserManager {
     }
 
     async login () {
+        debugger
         await this.signinRedirect()
         console.log('认证完毕', new Date())
         return this.getUser()
     }
 
     async logout () {
+        debugger
         return this.signoutRedirect()
     }
 }

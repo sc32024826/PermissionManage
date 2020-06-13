@@ -15,7 +15,12 @@ export const getToken = () => {
     if (token) return token
     else return false
 }
-
+export const getTokenExpire = () => {
+    const token = Cookies.get(TOKEN_KEY)
+    console.log(token)
+    if (token) return token.cookieExpires
+    else return false
+}
 export const hasChild = (item) => {
     return item.children && item.children.length !== 0
 }
