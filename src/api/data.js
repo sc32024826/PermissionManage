@@ -11,7 +11,7 @@ axios.defaults.timeout = 20000
 axios.interceptors.request.use(
     config => {
         if (store.state.user.token) {
-            console.log('添加 Authorization')
+            console.info('添加 Authorization')
             // 判断是否存在token，如果存在的话，则每个http header都加上token
             config.headers.Authorization = 'Bearer ' + store.state.user.token
         }
@@ -32,14 +32,10 @@ axios.interceptors.response.use(
         var originalRequest = error.config
         if (error.code === 'ECONNABORTED' && error.message.indexOf('timeout') !== -1 && !originalRequest._retry) {
             Message.error('请求超时！')
-
             originalRequest._retry = true
             return null
         }
-
         if (error.response) {
-            console.log(error)
-            debugger
             if (error.response.status === 401) {
                 if (store.state.user.token === 'undefined') {
                     debugger
@@ -56,32 +52,34 @@ axios.interceptors.response.use(
                 Message('刷新次数过多，请稍事休息重试！')
                 return null
             }
-            debugger
-            addErrorLog(error.response)
+            addErrorLog(error.response, 'ERROR')
         }
         return '' // 返回接口返回的错误信息
     }
 )
-const addErrorLog = errorInfo => {
-    const { statusText, status, request: { responseURL } } = errorInfo
+/**
+ * 添加错误信息并上传到服务器
+ * @param {*} errorInfo 错误信息
+ * @param {*} level 错误级别
+ */
+const addErrorLog = (errorInfo, level) => {
+    const { statusText, request: { responseURL } } = errorInfo
     let info = {
-        type: 'ajax',
-        code: status,
-        mes: statusText,
-        url: responseURL
+        appName: 'uniapp-vue-admin',
+        date: new Date(),
+        thread: '',
+        level: level,
+        logger: 'axios',
+        message: statusText,
+        exception: responseURL
     }
-    console.log(info)
     if (!responseURL.includes('save_error_logger')) {
-        debugger
         store.dispatch('addErrorLog', info)
     }
 }
 
 export const BaseApiUrl = base
 
-// export const refreshToken = params => {
-//     return axios.get(`${base}/api/login/RefreshToken`, { params: params }).then(res => res.data)
-// }
 const ToLogin = () => {
     console.log('登录前 清空')
     store.commit('setToken', '')
@@ -167,6 +165,7 @@ export const batchRemoveUser = params => {
 // 错误日志
 export const saveErrorLogger = params => {
     // return axios.post(`${base}/api/Logger/SubmitLogInformation`, { params: params })
-    // return axios.post('http://test-api.servers.mchains.cn/api/Logger/SubmitLogInformation', params)
-    return axios.post('http://172.18.20.142/api/Logger/SubmitLogInformation', params)
+    console.log(params)
+    return axios.post('http://test-api.servers.mchains.cn/api/Logger/SubmitLogInformation', params)
+    // return axios.post('http://172.18.20.142/api/Logger/SubmitLogInformation', params)
 }

@@ -1,4 +1,4 @@
-import { setToken, getToken, getTokenExpire } from '@/libs/util'
+import { setToken, getToken } from '@/libs/util'
 
 export default {
     state: {
@@ -12,14 +12,13 @@ export default {
         messageUnreadList: [],
         messageReadedList: [],
         messageTrashList: [],
-        messageContentStore: {},
-        TokenExpire: getTokenExpire()
+        messageContentStore: {}
     },
     mutations: {
-        setToken (state, token) {
-            state.token = token
-            setToken(token)
-            window.localStorage.setItem('Token', token)
+        setToken (state, data) {
+            state.token = data.token
+            setToken(data)
+            window.localStorage.setItem('Token', data.token)
         }
     },
     getters: {
