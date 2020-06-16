@@ -68,8 +68,6 @@ export default {
 			console.log(data.id)
 			this.loading = true
 			this.getPermission(data.id)
-			// this.per = data.permision
-			// this.temp = data.permision
 		},
 		save () {
 			this.savedisable = true
@@ -88,11 +86,9 @@ export default {
 			}
 			getRoleListPage(para).then(res => {
 				console.log(res)
-				if (res.data) {
+				if (res) {
 					this.tableData = res.data.response.data
 				}
-			}).catch(err => {
-				this.$throw(err)
 			})
 		},
 		getPermission (id) {
@@ -103,8 +99,6 @@ export default {
 				console.log(res.data)
 				this.pageList = res.data.response.permissionids
 				this.loading = false
-			}).catch(err => {
-				this.$throw(err)
 			})
 		},
 		fresh () {

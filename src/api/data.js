@@ -38,18 +38,18 @@ axios.interceptors.response.use(
         if (error.response) {
             if (error.response.status === 401) {
                 if (store.state.user.token === 'undefined') {
-                    debugger
+                    console.log('ToLogin')
                     ToLogin()
                 }
             }
             // 403 无权限
             if (error.response.status === 403) {
-                Message('失败！该操作无权限')
+                Message.error('失败！该操作无权限')
                 return null
             }
             // 429 ip限流
             if (error.response.status === 429) {
-                Message('刷新次数过多，请稍事休息重试！')
+                Message.error('刷新次数过多，请稍事休息重试！')
                 return null
             }
             addErrorLog(error.response, 'ERROR')
@@ -165,7 +165,6 @@ export const batchRemoveUser = params => {
 // 错误日志
 export const saveErrorLogger = params => {
     // return axios.post(`${base}/api/Logger/SubmitLogInformation`, { params: params })
-    console.log(params)
     return axios.post('http://test-api.servers.mchains.cn/api/Logger/SubmitLogInformation', params)
     // return axios.post('http://172.18.20.142/api/Logger/SubmitLogInformation', params)
 }

@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import routes from './routers'
-// import store from '@/store'
 import iView from 'view-design'
 import { getToken, setTitle } from '@/libs/util'
 import applicationUserManager from '@/Auth/applicationusermanager'
@@ -22,29 +21,21 @@ const router = new Router({
 
 router.beforeEach((to, from, next) => {
     iView.LoadingBar.start()
-
     const token = getToken()
-    // if (!token) {
-    //     console.log('================================')
-    //     store.commit('setToken', window.localStorage.Token)
-    // }
     if (to.meta.requireAuth) {
-        debugger
         // 判断该路由是否需要登录权限
         if (token && token !== 'undefined') {
             // 通过vuex state获取当前的token是否存在
             console.log('已经登录,直接跳转: ', to)
-            debugger
             next()
         } else {
-            debugger
-            console.log('未登录,前往认证', new Date())
+            console.log('未登录,前往认证')
+            console.log('TOKEN:', token)
             // 这里使用Id4授权认证，用Jwt，请删之，并把下边的跳转login 打开；
             applicationUserManager.login()
         }
     } else {
         console.log('该路由不需要登录,直接跳转: ', to)
-        debugger
         next()
     }
 })

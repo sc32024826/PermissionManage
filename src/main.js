@@ -7,13 +7,13 @@ import store from './store'
 import ViewUI from 'view-design'
 import config from '@/config'
 import installPlugin from '@/plugin'
-import error from '@/libs/ErrorUpload'
+// import error from '@/libs/ErrorUpload'
 import './index.less'
 import '@/assets/icons/iconfont.css'
 import 'view-design/dist/styles/iview.css'
 
 Vue.use(ViewUI)
-Vue.use(error)
+// Vue.use(error)
 /**
  * @description 注册admin内置插件
  */

@@ -1,4 +1,5 @@
 import { UserManager } from 'oidc-client'
+import { Message } from 'view-design'
 
 class ApplicationUserManager extends UserManager {
     constructor () {
@@ -8,21 +9,24 @@ class ApplicationUserManager extends UserManager {
             redirect_uri: 'http://localhost:8080/callback', // 登录回调地址
             response_type: 'id_token token',
             scope: 'openid profile roles shanying.services.api', // 作用域也要一一匹配
-            post_logout_redirect_uri: 'http://localhost:8080/home', // 登出后回调地址
+            post_logout_redirect_uri: 'http://localhost:8080/welcome', // 登出后回调地址
             automaticSilentRenew: true
         })
     }
 
     async login () {
-        debugger
         await this.signinRedirect()
-        console.log('认证完毕', new Date())
         return this.getUser()
     }
 
     async logout () {
-        debugger
-        return this.signoutRedirect()
+        let msg = await this.getUser()
+        console.log(msg)
+        if (msg !== null) {
+            return this.signoutRedirect()
+        } else {
+            Message.error('当前未登录')
+        }
     }
 }
 

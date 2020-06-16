@@ -20,15 +20,18 @@ export default {
 			console.log('================登录=================')
 			// 核心的就是这里了
 			await applicationUserManager.signinRedirectCallback()
-			let user = await applicationUserManager.getUser()
+            let user = await applicationUserManager.getUser()
+            console.log('success')
 			console.log(user)
 			this.$store.commit('setToken', { token: user.access_token, expire: user.expires_at })
-			window.localStorage.expires_at = user.expires_at
+            window.localStorage.expires_at = user.expires_at
 			// 调整首页
 			this.$router.push({ name: 'home' })
 		} catch (e) {
+            console.log('error- signinRedirectCallback')
 			console.log(e)
-			this.$root.$emit('show-snackbar', { message: e })
+            // this.$root.$emit('show-snackbar', { message: e })
+            // applicationUserManager.login()
 		}
 	}
 }

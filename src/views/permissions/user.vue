@@ -88,8 +88,6 @@ export default {
 				console.log(res.data)
 				this.tableData = res.data.response.data
 			}).catch(err => {
-                console.log(err)
-                // this.$throw(err)
 				this.$Message['error']({
 					background: true,
 					content: err,
@@ -105,8 +103,6 @@ export default {
 			getRoleListPage(para).then(res => {
 				console.log(res.data)
 				this.GroupList = res.data.response.data
-			}).catch(err => {
-				console.log(err)
 			})
 		},
 		update () {
