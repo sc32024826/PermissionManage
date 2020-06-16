@@ -21,32 +21,6 @@ export default {
 			await this.refreshUserInfo()
 		}
 	}
-	// methods: {
-	// 	async login () {
-	// 		try {
-	// 			await applicationUserManager.login()
-	// 		} catch (error) {
-	// 			console.log(error)
-	// 			this.$root.$emit('show-snackbar', { message: error })
-	// 		}
-	// 	},
-	// 	async logout () {
-	// 		try {
-	// 			await applicationUserManager.logout()
-	// 			this.$store.commit('setToken', '')
-	// 			window.localStorage.removeItem('user')
-	// 			window.localStorage.removeItem('Token')
-	// 			window.localStorage.removeItem('TokenExpire')
-	// 			window.localStorage.removeItem('NavigationBar')
-	// 			window.localStorage.removeItem('refreshtime')
-	// 			window.localStorage.removeItem('router')
-	// 			sessionStorage.removeItem('Tags')
-	// 		} catch (error) {
-	// 			console.log(error)
-	// 			this.$root.$emit('show-snackbar', { message: error })
-	// 		}
-	// 	}
-	// }
 }
 </script>
 

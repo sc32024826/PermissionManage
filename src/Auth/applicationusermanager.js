@@ -8,9 +8,12 @@ class ApplicationUserManager extends UserManager {
             client_id: 'shanying_vue_ui', // 客户端 id
             redirect_uri: 'http://localhost:8080/callback', // 登录回调地址
             response_type: 'id_token token',
-            scope: 'openid profile roles shanying.services.api', // 作用域也要一一匹配
+            scope: 'openid profile roles offline_access shanying.services.api', // 作用域也要一一匹配
             post_logout_redirect_uri: 'http://localhost:8080/welcome', // 登出后回调地址
-            automaticSilentRenew: true
+            // 静默刷新
+            silentRedirectUri: 'http://localhost:8080/oidc-silent-renew',
+            automaticSilentRenew: true, // If true oidc-client will try to renew your token when it is about to expire
+            automaticSilentSignin: true // If true vuex-oidc will try to silently signin unauthenticated users on public routes. Defaults to true
         })
     }
 
