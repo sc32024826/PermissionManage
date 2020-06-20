@@ -26,13 +26,7 @@ Vue.config.productionTip = false
  * @description 全局注册应用配置
  */
 Vue.prototype.$config = config
-// const errorHandler = (error, vm) => {
-//     console.error('抛出全局异常')
-//     console.error(vm)
-//     console.error(error)
-// }
-// Vue.config.errorHandler = errorHandler
-// Vue.prototype.$throw = (error) => errorHandler(error, this)
+
 /* eslint-disable no-new */
 new Vue({
     el: '#app',

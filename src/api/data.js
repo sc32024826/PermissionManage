@@ -1,5 +1,4 @@
 import axios from 'axios'
-import applicationUserManager from '../Auth/applicationusermanager'
 import store from '@/store'
 import { Message } from 'view-design'
 
@@ -10,8 +9,8 @@ axios.defaults.timeout = 20000
 
 axios.interceptors.request.use(
     config => {
-        if (store.state.user.token) {
-            console.info('添加 Authorization')
+        if (store.state.user.token && store.state.user.token !== 'undefined') {
+            console.info('添加 Authorization', store.state.user.token)
             // 判断是否存在token，如果存在的话，则每个http header都加上token
             config.headers.Authorization = 'Bearer ' + store.state.user.token
         }
@@ -80,12 +79,12 @@ const addErrorLog = (errorInfo, level) => {
 
 export const BaseApiUrl = base
 
+// 静默刷新
 const ToLogin = () => {
-    console.log('登录前 清空')
-    store.commit('setToken', '')
-    window.localStorage.removeItem('user')
-    window.localStorage.removeItem('NavigationBar')
-    applicationUserManager.login()
+    
+    let a = store.state.user.token
+    console.log(a)
+   
 }
 // 菜单模块管理
 export const getPermissionListPage = params => {

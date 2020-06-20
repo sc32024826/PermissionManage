@@ -12,27 +12,32 @@ export default {
         messageUnreadList: [],
         messageReadedList: [],
         messageTrashList: [],
-        messageContentStore: {}
+        messageContentStore: {},
+        TokenExpire: null
     },
     mutations: {
+        setName (state, data) {
+            console.log(data)
+            state.userName = data
+        },
         setToken (state, data) {
-            state.token = data.token
+            console.log(data)
+            state.token = data
             setToken(data)
-            window.localStorage.setItem('Token', data.token)
+            window.localStorage.setItem('Token', data)
+        },
+        saveTokenExpire (state, data) {
+            console.log(data)
+            state.TokenExpire = data
+        },
+        setAvatar (state, avatarPath) {
+            console.log(avatarPath)
+            state.avatarImgPath = avatarPath
         }
     },
     getters: {
 
     },
     actions: {
-        // 登录
-        handleLogin ({ commit }, token) {
-            commit('setToken', token)
-        },
-        // 退出登录
-        handleLogOut ({ state, commit }) {
-            commit('setToken', '')
-            commit('setAccess', [])
-        }
     }
 }

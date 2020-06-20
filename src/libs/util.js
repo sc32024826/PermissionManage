@@ -6,9 +6,9 @@ const { title } = config
 
 export const TOKEN_KEY = 'token'
 
-export const setToken = (Object) => {
-    let ex = new Date(Object.expire * 1000)
-    Cookies.set(TOKEN_KEY, Object.token, { expires: ex })
+export const setToken = (data) => {
+    Cookies.set(TOKEN_KEY, data)
+    debugger
 }
 
 export const getToken = () => {
